@@ -159,6 +159,7 @@ addLayer("c1", {
         cc12: {
             display() {
                 return `<b><big>${inCelChall(12)?"退出":"进入"}天体挑战[超现实II].</big></b>
+                你需要6奇点以进入该挑战.
                 挑战外有关现实的 *惩罚* 将会保留;
                 同时,挑战内再次获得这些特权*仍然生效*(这意味着效果触发两次).
                 
@@ -188,7 +189,7 @@ addLayer("c1", {
             },
             unlocked(){return player.s.cc11.gte(5)},
             style(){return {height:"200px",width:"600px","font-size":"12px","border-radius": "0%","background-color":inCelChall(12)?"purple":"#5555FF"}},
-            canClick: true,
+            canClick(){return player.s.basic.gte(6)},
         },
     },
 })
