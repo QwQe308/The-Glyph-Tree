@@ -86,7 +86,7 @@ var nerf = {
             if(inCelChall(12) && hasMilestone("s",6)) nerf = nerf.pow(2)
             return nerf
         },
-        unlocked() { return hasMilestone("s", 5) || (inCelChall(12) && player.s.basic.gte(6))},
+        unlocked() { return hasMilestone("s", 6) || (inCelChall(12) && player.s.basic.gte(6))},
     },
 }
 function spawnNerfInfo() {
@@ -149,7 +149,7 @@ addLayer("s", {
     layerShown() { return true },
     update(diff) {
         if (!player.s.chall) player.s.chall = "basic"
-        player.s.de = (player.s.chall !== "basic" && player.s.points.gte(player.s.basic) || player.s.points.gt(6)) ? n(0) : player.s.de.add(getDEProc().mul(diff)).min(getSReq().mul(1.01))
+        player.s.de = (player.s.chall !== "basic" && player.s.points.gte(player.s.basic) || player.s.points.gt(6)) ? n(0) : player.s.de.add(getDEProc().mul(diff)).min(getSReq().mul(1.0001))
         player.s.best = player.s.best.max(player.s.points)
         player.s[player.s.chall] = player.s[player.s.chall].max(player.s.points)
     },
