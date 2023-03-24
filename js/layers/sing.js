@@ -149,7 +149,7 @@ addLayer("s", {
     layerShown() { return true },
     update(diff) {
         if (!player.s.chall) player.s.chall = "basic"
-        player.s.de = (player.s.chall !== "basic" && player.s.points.gte(player.s.basic) || player.s.points.gt(6)) ? n(0) : player.s.de.add(getDEProc().mul(diff)).min(getSReq())
+        player.s.de = (player.s.chall !== "basic" && player.s.points.gte(player.s.basic) || player.s.points.gt(6)) ? n(0) : player.s.de.add(getDEProc().mul(diff)).min(getSReq().mul(1.01))
         player.s.best = player.s.best.max(player.s.points)
         player.s[player.s.chall] = player.s[player.s.chall].max(player.s.points)
     },
