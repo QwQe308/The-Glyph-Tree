@@ -13,11 +13,22 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: " beta-0.51",
+	num: "beta-0.61",
 	name: "",
 }
 
 let changelog = `<h1>更新日志:</h1><br><br>
+    <h3>beta-0.61</h3><br>
+		- 切换符文现在不再生成符文.<br><br>
+    <h3>beta-0.6</h3><br>
+		- 制作了第六奇点.(好水好膨胀的样子)<br>
+		- 为第五奇点添加了第二个天体挑战.<br>
+		- 修改了Teresa的配色.<br>
+		- 修复了购买最大计时频率升级使用点数而非古物碎片的错误.<br>
+		- 为第五奇点添加了一个新的减益.<br>
+		- 削弱了维度符文效果4.<br>
+		- 添加了符文槽数上限.<br>
+		- 修复了自动购买特权能在购买项未解锁时购买升级的问题.<br><br>
     <h3>beta-0.51</h3><br>
 		- 增强了[能量衰减]减益.(x^4 -> x^4*1.1^x)<br>
 		- 修复了[超现实]天体挑战内充能槽效果叠加三次的问题.<br>
@@ -83,8 +94,12 @@ var displayThings = [
         if(hasMilestone("s",2)) if(scanEmptyPlaces().length === 0) return `${quickColor(`!符文仓库已满!`,"red")}`
     },
     function(){
-        if(inCelChall("cc1")) return `你正在 <超现实> 天体挑战中.`
+        if(inCelChall(11)) return `你正在 <超现实> 天体挑战中.`
+        if(inCelChall(12)) return `你正在 <超现实II> 天体挑战中.`
     },
+    function(){
+        return `游戏终局: 到达第七奇点(以及尽可能多的挑战)`
+    }
 ]
 
 // Determines when the game "ends"
@@ -109,4 +124,5 @@ function maxTickLength() {
 // Use this if you need to undo inflation from an older version. If the version is older than the version that fixed the issue,
 // you can cap their current resources with this.
 function fixOldSave(oldVersion){
+    player.s.cc11 = n(player.s.cc1).max(player.s.cc11)
 }
