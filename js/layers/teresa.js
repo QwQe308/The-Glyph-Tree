@@ -1,6 +1,6 @@
 function getPerkPoints() {
     var pp = player.s.basic.pow(2).div(5)
-    pp = pp.add(player.s.cc1.pow(2).div(5))
+    pp = pp.add(player.s.cc11.pow(2).div(5))
     return pp
 }
 function checkPerkReq(req) {
@@ -27,7 +27,7 @@ addLayer("c1", {
             used: n(0),
         }
     },
-    color: "blue",
+    color: "#5555FF",
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
     resource: "专精点", // Name of prestige currency
     //effectDescription(){return `暗能量产量: +${format(getDEProc())}/s.`},
@@ -61,7 +61,8 @@ addLayer("c1", {
             content: [
                 "main-display",
                 "blank",
-                ["clickable","cc1"],
+                ["clickable","cc11"],
+                ["clickable","cc12"],
             ],
         }
     },
@@ -125,20 +126,20 @@ addLayer("c1", {
             },
             canClick: true,
         },
-        cc1: {
+        cc11: {
             display() {
-                return `<b><big>${inCelChall("cc1")?"退出":"进入"}天体挑战[超现实].</big></b>
+                return `<b><big>${inCelChall(11)?"退出":"进入"}天体挑战[超现实].</big></b>
                 挑战外有关Teresa的特权*将会保留*;
                 同时,挑战内再次获得这些特权*仍然生效*(这意味着效果触发两次).
                 "充能符文槽"关于奇点的等级加成改为基于挑战内外的奇点数的平均数.
 
                 <i>(天体挑战内奇点数不得超过挑战外)</i>
                 进入/退出该天体挑战将会记录你当前的奇点数并暂时清零,在进入/退出时会返还.
-                ${quickColor(`奖励: 挑战内有关Teresa的特权加成将会被保留(减益除外,Teresa重建I的充能槽效果加成以挑战奇点计数),并且挑战内可以获得特权点.<br>(当前已达到奇点数:${formatWhole(player.s.cc1)})`, "lime")}`
+                ${quickColor(`奖励: 挑战内有关Teresa的特权加成将会被保留(减益除外,Teresa重建I的充能槽效果加成以挑战奇点计数),并且挑战内可以获得特权点.<br>(当前已达到奇点数:${formatWhole(player.s.cc11)})`, "lime")}`
             },
             onClick() {
                 if(!confirm("你确定进入/退出天体挑战吗?这将重置本次奇点,并将奇点数暂时归零!")) return
-                if (player.s.chall == "cc1") {
+                if (player.s.chall == "cc11") {
                     player.s.de = n(0)
                     doReset("s", true)
                     player.s.milestones = []
@@ -148,11 +149,45 @@ addLayer("c1", {
                     player.s.de = n(0)
                     doReset("s", true)
                     player.s.milestones = []
-                    player.s.points = player.s.cc1
-                    player.s.chall = "cc1"
+                    player.s.points = player.s.cc11
+                    player.s.chall = "cc11"
                 }
             },
-            style(){return {height:"200px",width:"600px","font-size":"12px","border-radius": "0%","background-color":inCelChall("cc1")?"purple":"blue"}},
+            style(){return {height:"200px",width:"600px","font-size":"12px","border-radius": "0%","background-color":inCelChall(11)?"purple":"#5555FF"}},
+            canClick: true,
+        },
+        cc12: {
+            display() {
+                return `<b><big>${inCelChall(12)?"退出":"进入"}天体挑战[超现实II].</big></b>
+                挑战外有关现实的 *惩罚* 将会保留;
+                同时,挑战内再次获得这些特权*仍然生效*(这意味着效果触发两次).
+                
+                <big><b>在挑战中,你的古物碎片也计入暗物质获取公式.<b></big>
+
+                <i>(天体挑战内奇点数不得超过挑战外)</i>
+                进入/退出该天体挑战将会记录你当前的奇点数并暂时清零,在进入/退出时会返还.
+                ${quickColor(`奖励: 对于挑战中每个完成的奇点,符文仓库槽+1,古物的获取指数+0.025.<br>(当前已达到奇点数:${formatWhole(player.s.cc12)})`, "lime")}`
+            },
+            effect1(){return player.s.cc12},//仓库槽加成
+            effect2(){return player.s.cc12.mul(0.025)},//古物产量加成
+            onClick() {
+                if(!confirm("你确定进入/退出天体挑战吗?这将重置本次奇点,并将奇点数暂时归零!")) return
+                if (player.s.chall == "cc12") {
+                    player.s.de = n(0)
+                    doReset("s", true)
+                    player.s.milestones = []
+                    player.s.points = player.s.basic
+                    player.s.chall = "basic"
+                } else {
+                    player.s.de = n(0)
+                    doReset("s", true)
+                    player.s.milestones = []
+                    player.s.points = player.s.cc12
+                    player.s.chall = "cc12"
+                }
+            },
+            unlocked(){return player.s.cc11.gte(5)},
+            style(){return {height:"200px",width:"600px","font-size":"12px","border-radius": "0%","background-color":inCelChall(12)?"purple":"#5555FF"}},
             canClick: true,
         },
     },

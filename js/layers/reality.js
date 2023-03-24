@@ -31,13 +31,14 @@ addLayer("r", {
         mult = new Decimal(1)
         mult = mult.mul(tmpEffectList.relic)
         if (hasMilestone("s", 3)) mult = mult.mul(player.r.resetTime ** 0.55)
-        if (inCelChall("cc1") && player.s.basic.gte(3) || player.s.cc1.gte(3)) mult = mult.mul(player.r.resetTime ** 0.55)
+        if (inCelChall(11) && player.s.basic.gte(3) || player.s.cc11.gte(3)) mult = mult.mul(player.r.resetTime ** 0.55)
 
         if(getNerfUnlocked(3)) mult = mult.div(getNerfEffect(3))//减益3:现实过载
         return mult
     },
     gainExp() {
         exp = new Decimal(1)
+        exp = exp.add(getCelChallEffect(12,2))//超现实II挑战奖励
         if(getNerfUnlocked(2)) exp = exp.mul(getNerfEffect(2))//减益2:空间膨胀
         return exp
     },
@@ -46,7 +47,7 @@ addLayer("r", {
         { key: "r", description: "R: 进行现实重置", onPress() { if (canReset(this.layer)) doReset(this.layer) } },
     ],
     onPrestige(gain) {
-        /* if(player.r.resetTime > getGlyphDelay())  */spawnRandomGlyph()
+        spawnRandomGlyph()
     },
     doReset(resettingLayer){
         if(layers[resettingLayer].row>this.row){
@@ -120,17 +121,22 @@ addLayer("r", {
                 return mult
             },
             buy() {
+                if(!this.unlocked()) return
                 if(hasUpgrade("c1",11)) return this.buyMax()
                 player.r.points = player.r.points.sub(this.cost()).max(0)
                 player.r.buyables[this.id] = player.r.buyables[this.id].add(1)
             },
             buyMax(){
+                if(!this.unlocked()) return
                 let amount = player.r.points.mul(100).max(1).log(100).floor().mul(10)
                 if(hasMilestone("s",4)) amount = player.r.points.mul(10000).max(1).log(10000).floor().mul(10)
                 player.r.buyables[this.id] = player.r.buyables[this.id].max(amount)
             },
             canAfford() {
                 return player.r.points.gte(this.cost())
+            },
+            unlocked(){
+                return hasMilestone("s",1)
             },
             style(){return {
                     "border-radius": "0%",
@@ -144,11 +150,13 @@ addLayer("r", {
                 return cost
             },
             buy() {
+                if(!this.unlocked()) return
                 if(hasUpgrade("c1",11)) return this.buyMax()
                 player.points = player.points.sub(this.cost()).max(0)
                 player.r.buyables.a1 = player.r.buyables.a1.add(1)
             },
             buyMax(){
+                if(!this.unlocked()) return
                 let amount = player.points.mul(1000).max(1).log(1000).floor().mul(10)
                 player.r.buyables[this.id] = player.r.buyables[this.id].max(amount)
             },
@@ -166,11 +174,17 @@ addLayer("r", {
             },
         },
         2: {
-            display() { return `<big><big>符文槽解锁.<br>已解锁 ${format(getBuyableAmount(this.layer, this.id))} 个符文槽<br>价格:${format(this.cost())}</big></big>` },
+            display() { return `<big><big>符文槽解锁.<br>已解锁 ${format(getBuyableAmount(this.layer, this.id))} 个符文槽(总计上限16个)<br>价格:${format(this.cost())}</big></big>` },
             cost(x = getBuyableAmount(this.layer, this.id)) {
-                return n(10).pow(x.add(1).pow(2))
+                //if(x.gte(9)) x = x.mul(n(1.05).pow(x.sub(8)))
+                let cost = n(10).pow(x.add(1).pow(2))
+                if(getNerfUnlocked(4)) cost = cost.pow(getNerfEffect(4))
+                if(getEquipSlotCount() >= 16) return n('(e^100)1')
+                //if(x.gte(9)) cost = expPow(cost,1.125)
+                return cost
             },
             buy() {
+                if(!this.unlocked()) return
                 player.r.points = player.r.points.sub(this.cost()).max(0)
                 player.r.buyables[this.id] = player.r.buyables[this.id].add(1)
             },
@@ -195,12 +209,14 @@ addLayer("r", {
                 return this.base().pow(x)
             },
             buy() {
+                if(!this.unlocked()) return
                 if(hasUpgrade("c1",12)) return this.buyMax()
                 player.r.points = player.r.points.sub(this.cost()).max(0)
                 player.r.buyables[this.id] = player.r.buyables[this.id].add(1)
             },
             buyMax(){
-                let amount = player.points.max(1).log(10).floor()
+                if(!this.unlocked()) return
+                let amount = player.r.points.max(1).log(10).floor()
                 player.r.buyables[this.id] = player.r.buyables[this.id].max(amount)
             },
             canAfford() {
@@ -218,11 +234,13 @@ addLayer("r", {
                 return n(10).pow(x.add(2))
             },
             buy() {
+                if(!this.unlocked()) return
                 if(hasUpgrade("c1",12)) return this.buyMax()
                 player.points = player.points.sub(this.cost()).max(0)
                 player.r.buyables[this.id] = player.r.buyables[this.id].add(1)
             },
             buyMax(){
+                if(!this.unlocked()) return
                 let amount = player.points.max(1).log(10).sub(1).floor()
                 player.r.buyables[this.id] = player.r.buyables[this.id].max(amount)
             },
@@ -243,15 +261,20 @@ addLayer("r", {
             display() {
                 return `<big><big>维度提升.<br>已进行维度提升 ${format(getBuyableAmount(this.layer, this.id))} 次<br><br>所有维度(包括维度符文) x${format(this.effect())}(底数:x${format(this.base())})<br><br>要求:${format(this.cost())} 反物质维度<br>购买时强制进行一次现实重置(无收益).</big></big>`},
             cost(x = getBuyableAmount(this.layer, this.id)) {
-                return n(20).add(x.mul(20))
+                let cost = n(20).add(x.mul(20))
+                if(hasMilestone('s',6)) cost = cost.add(20).mul(2)
+                return cost
             },
-            base() {
-                return n(2)
+            base(x = getBuyableAmount(this.layer, this.id)) {
+                let base = n(2)
+                if(hasMilestone('s',6)) base = base.mul(x.add(4).log(4))
+                return base
             },
             effect() {
                 return this.base().pow(getBuyableAmount(this.layer, this.id))
             },
             buy() {
+                if(!this.unlocked()) return
                 doReset(this.layer,true)
                 player.r.buyables[this.id] = player.r.buyables[this.id].add(1)
             },

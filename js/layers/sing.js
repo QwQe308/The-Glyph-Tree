@@ -1,35 +1,55 @@
+//奇点相关
 function getDEProc() {
     var proc = player.points.max(1).log10().pow(2)
-    if (nerf[1].unlocked()) proc = proc.div(nerf[1].effect())
+
+    if (inCelChall(12)) proc = proc.mul(player.r.points.div(10).add(10).log10().pow(1.75))//cc12:古物碎片计入暗物质产量公式.
+
+    if (getNerfUnlocked(1)) proc = proc.div(getNerfEffect(1))
+    if (getNerfUnlocked(5)) proc = proc.pow(getNerfEffect(5))
     return proc
 }
 
 function getSReq() {
-    return n(2).pow(player.s.points).mul(10)
+    let req = n(2).pow(player.s.points).mul(10)
+    if(getNerfUnlocked(5)) req = req.pow(getNerfEffect(5))
+    return req
 }
 
+//挑战相关
+function getCelChallEffect(id,extraName = ""){
+    id = Number(id)
+    return layers["c"+(id-id%10)/10].clickables["cc"+id]["effect"+extraName]()
+}
+function inCelChall(chall) { return player.s.chall == "cc"+chall }
+
+//减益相关
 function getNerfUnlocked(id) { return nerf[id].unlocked() }
 function getNerfEffect(id) { return nerf[id].effect() }
-function inCelChall(chall) { return player.s.chall == chall }
+
+
 var nerf = {
     1: {
         name: "能量衰竭(变数)",
         description() { return `暗能量获取速度/${format(this.effect())}. - [S1]` },
-        effect() { return player.s.points.add(1).pow(4).mul(n(1.1).pow(player.s.points)) },
-        unlocked() { return hasMilestone("s", 1) },
+        effect() {
+            let nerf = player.s.points.add(1).pow(4).mul(n(1.1).pow(player.s.points))
+            if(inCelChall(12) && hasMilestone("s",1)) nerf = nerf.pow(2)
+            return nerf
+        },
+        unlocked() { return hasMilestone("s", 1) || (inCelChall(12) && player.s.basic.gte(1))},
     },
     2: {
         name: "空间膨胀(恒定)",
         description() { return `古物碎片获取^${format(this.effect())}. - [S3]` },
         effect() {
-            if (inCelChall("cc1")) {
+            if (inCelChall(11)) {
                 if (!hasMilestone("s", 3)) return n(0.55)
                 return n(0.55 ** 2)
             }
             return n(0.55)
         },
         unlocked() {
-            return hasMilestone("s", 3) || (inCelChall("cc1") && player.s.best.gte(3))
+            return hasMilestone("s", 3) || (inCelChall(11) && player.s.basic.gte(3))
         },
     },
     3: {
@@ -37,10 +57,36 @@ var nerf = {
         description() { return `古物碎片获取/${format(this.effect())}.对于每个装有符文的符文槽,该效果都会再次提升. - [S5]` },
         effect() {
             let nerf = player.s.points.add(1).pow(player.s.points.div(2).max(3).add(getActiveGlyphCount()*1.5))
-            if(inCelChall("cc1") && hasMilestone("s",5)) nerf = nerf.pow(2)
+            if(inCelChall(11) && hasMilestone("s",5)) nerf = nerf.pow(2)
             return nerf
         },
-        unlocked() { return hasMilestone("s", 5) || (inCelChall("cc1") && player.s.best.gte(5))},
+        unlocked() { return hasMilestone("s", 5) || (inCelChall(11) && player.s.basic.gte(5))},
+    },
+    4: {
+        name: "物质无序(变数)",
+        description() { return `符文槽价格^${format(this.effect(),3)}. - [S5]` },
+        effect() {
+            let nerf = player.s.points.sub(3).div(5).add(1)
+            if(player.s.points.lt(5)){
+                nerf = player.s.points.add(1).div(15).add(1)
+            }
+            if(inCelChall(11) && hasMilestone("s",5)) nerf = nerf.pow(2)
+            return nerf
+        },
+        unlocked() { return hasMilestone("s", 5) || (inCelChall(11) && player.s.basic.gte(5))},
+    },
+    5: {
+        name: "粒子对撞(变数)",
+        description() { return `暗能量获取与奇点要求同时^${format(this.effect(),3)}. - [S6]` },
+        effect() {
+            let nerf = player.s.points.sub(4).div(10).add(1)
+            if(player.s.points.lt(6)){
+                nerf = player.s.points.add(1).div(40).add(1)
+            }
+            if(inCelChall(12) && hasMilestone("s",6)) nerf = nerf.pow(2)
+            return nerf
+        },
+        unlocked() { return hasMilestone("s", 5) || (inCelChall(12) && player.s.basic.gte(6))},
     },
 }
 function spawnNerfInfo() {
@@ -71,11 +117,15 @@ addLayer("s", {
             chall: "basic",
 
             basic: n(0),
-            cc1: n(0),
+
+            cc11: n(0),
+            cc12: n(0),
         }
     },
     color: "gold",
-    requires: new Decimal(10), // Can be a function that takes requirement increases into account
+    requires(){
+        return n(10).root(this.gainExp())
+    }, // Can be a function that takes requirement increases into account
     resource: "奇点", // Name of prestige currency
     baseResource: "暗能量", // Name of resource prestige is based on
     baseAmount() { return player.s.de }, // Get the current amount of baseResource
@@ -88,7 +138,9 @@ addLayer("s", {
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
-        return new Decimal(1)
+        let exp = new Decimal(1)
+        if(getNerfUnlocked(5)) exp = exp.div(getNerfEffect(5))
+        return exp
     },
     row: 2, // Row the layer is in on the tree (0 is the first row)
     /* hotkeys: [
@@ -97,7 +149,7 @@ addLayer("s", {
     layerShown() { return true },
     update(diff) {
         if (!player.s.chall) player.s.chall = "basic"
-        player.s.de = (player.s.chall !== "basic" && player.s.points.gte(player.s.basic) || player.s.points.gt(5)) ? n(0) : player.s.de.add(getDEProc().mul(diff))
+        player.s.de = (player.s.chall !== "basic" && player.s.points.gte(player.s.basic) || player.s.points.gt(6)) ? n(0) : player.s.de.add(getDEProc().mul(diff)).min(getSReq())
         player.s.best = player.s.best.max(player.s.points)
         player.s[player.s.chall] = player.s[player.s.chall].max(player.s.points)
     },
@@ -174,9 +226,10 @@ addLayer("s", {
             requirementDescription: `5奇点 - 重建[天体·现实] - ϞTeresaϞ(环节II)`,
             effectDescription: `
             1.${quickColor(`触发变数惩罚: 现实过载`, "red")}.<br>
-            2.解锁"专精树".基于奇点数给予<b>S^2/5</b>专精点(向下取整)<i>${quickColor("[永久保留]", "blue")}</i><br>
-            3.解锁1个充能符文槽.<br>
-            4.解锁[天体·现实]挑战-"超现实".
+            2.${quickColor(`触发恒定惩罚: 物质无序`, "red")}.<br>
+            3.解锁"专精树".基于奇点数给予<b>S^2/5</b>专精点(向下取整)<i>${quickColor("[永久保留]", "blue")}</i><br>
+            4.解锁1个充能符文槽.<br>
+            5.解锁[天体·现实]挑战[超现实].
             `,
             done() { return player.s.points.gte(5) },
             unlocked() { return player.s.best.gte(Number(this.id) - 1) },
@@ -187,15 +240,13 @@ addLayer("s", {
                 }
             },
         },
-        /* 6: {
+        6: {
             requirementDescription: `6奇点 - 重建现实(环节III)`,
             effectDescription: `
-            1.${quickColor(`触发变数惩罚: 现实过载`, "red")}.<br>
-            2.解锁"专精树".基于奇点数给予<b>S^2/5</b>专精点(向下取整)<i>${quickColor("[永久保留]", "blue")}</i><br>
-            3.解锁1个充能符文槽.<br>
-            4.解锁[天体·现实]挑战-"超现实".
+            1.${quickColor(`触发变数惩罚: 粒子对撞`, "red")}.<br>
+            2."维度提升"的起始价格+20,最终价格*2,但是效果底数会随数量增长.<br>
             `,
-            done() { return player.s.points.gte(5) },
+            done() { return player.s.points.gte(6) },
             unlocked() { return player.s.best.gte(Number(this.id) - 1) },
             style() {
                 return {
@@ -203,7 +254,7 @@ addLayer("s", {
                     height: "100px"
                 }
             },
-        }, */
+        },
     },
     tabFormat: {
         "特权": {

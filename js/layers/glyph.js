@@ -17,25 +17,25 @@ function getChargedSlotCount() {
     var chargedCount = n(0)
     if (hasMilestone("s", 3)) chargedCount = chargedCount.add(1)
     if (hasMilestone("s", 5)) chargedCount = chargedCount.add(1)
-    if (inCelChall("cc1")) {
+    if (inCelChall(11)) {
         if (player.s.basic.gte(3)) chargedCount = chargedCount.add(1)
         if (player.s.basic.gte(5)) chargedCount = chargedCount.add(1)
     } else {
-        if (player.s.cc1.gte(3)) chargedCount = chargedCount.add(1)
-        if (player.s.cc1.gte(5)) chargedCount = chargedCount.add(1)
+        if (player.s.cc11.gte(3)) chargedCount = chargedCount.add(1)
+        if (player.s.cc11.gte(5)) chargedCount = chargedCount.add(1)
     }
     return chargedCount.toNumber()
 }
 //充能槽额外等级
 function getChargedSlotEffect() {
     var chargedLevel = n(0)
-    if (inCelChall("cc1")) {
+    if (inCelChall(11)) {
         if (hasMilestone("s", 3)) chargedLevel = chargedLevel.add(player.s.points.add(player.s.basic).div(2).sub(1).pow(2).mul(2))
         else chargedLevel = chargedLevel.add(player.s.points.add(player.s.basic).div(2).sub(1).pow(2))
     }
     else {
         if (hasMilestone("s", 3)) chargedLevel = chargedLevel.add(player.s.points.sub(1).pow(2))
-        if (player.s.cc1.gte(3)) chargedLevel = chargedLevel.add(player.s.cc1.sub(1).pow(2))
+        if (player.s.cc11.gte(3)) chargedLevel = chargedLevel.add(player.s.cc11.sub(1).pow(2))
     }
     return chargedLevel
 }
@@ -51,6 +51,7 @@ function getStorageSlotCount() {
     var count = n(9)
     if (hasUpgrade("c1", 13)) count = count.add(3)
     if (hasUpgrade("c1", 23)) count = count.add(4)
+    count = count.add(getCelChallEffect(12,1))//超现实II奖励
     return count.toNumber()
 }
 //点数对等级的加成
@@ -153,10 +154,10 @@ var glyphList = [
             {//4
                 id: 'extraLevel',//id判断属性类型 同种进行叠加运算
                 stack(prevEff, thisEff, data) {//叠加运算
-                    return prevEff.add(thisEff.mul(data.number.add(10).log10().pow(0.6)))
+                    return prevEff.add(thisEff.mul(data.number.add(10).log10().pow(0.5)))
                 },
                 description(level, rarity) {
-                    return `获取符文等级+ (${format(this.effect(level, rarity))} * lg(数量+10)^0.6)(多效果间叠加)`
+                    return `获取符文等级+ (${format(this.effect(level, rarity))} * lg(数量+10)^0.5)(多效果间叠加)`
                 },
                 effect(level, rarity) {
                     var strength = rarity.add(1).mul(level)
@@ -296,8 +297,8 @@ addLayer("g", {
     row: 3, // Row the layer is in on the tree (0 is the first row)
     layerShown() { return false },
     grid: {
-        rows: 5,
-        cols: 5,
+        rows: 6,
+        cols: 6,
         getStartData(id) {
             return {
                 type: null,
@@ -323,7 +324,8 @@ addLayer("g", {
             } else if (player[selecting[0]].grid[selecting[1]]) {
                 clearTmpEffects(selecting[0] == "ghost")//清空上帧的临时效果
                 if (selecting[0] == "ghost") {
-                    doReset("r")
+                    //doReset("r")
+                    player.r.points = player.r.points.add(getResetGain('r'))
                     doReset("r", true)
                 }
                 let tmpGlyphData = player[selecting[0]].grid[selecting[1]]
@@ -337,11 +339,11 @@ addLayer("g", {
             return getStorageSlotUnlocked(id)
         },
         getDisplay(data, id) {
-            if (data.type === null) return ``
+            if (data.type === null) return ''
             return `<big>${glyphList[data.type].icon}</big>\n等级:${formatWhole(data.level)}\n品质:${format(data.rarity.mul(100))}%\n<b>词条:${showEffects(data.effect)}</b>`
         },
         getTooltip(data, id) {
-            if (!data) return
+            if (!data) return false
             if (data.type === null) return
             var glyphInfo = glyphList[data.type]
             var str = glyphInfo.name + glyphInfo.icon + `<br>`
@@ -545,7 +547,8 @@ addLayer("ghost", {
 
             } else if (player[selecting[0]].grid[selecting[1]]) {
                 clearTmpEffects(true)//清空上帧的临时效果
-                doReset("r")
+                //doReset("r")
+                player.r.points = player.r.points.add(getResetGain('r'))
                 doReset("r", true)
                 let tmpGlyphData = player[selecting[0]].grid[selecting[1]]
                 player[selecting[0]].grid[selecting[1]] = player.ghost.grid[id]
