@@ -1,7 +1,7 @@
 let modInfo = {
 	name: "符文树",
 	id: "The-Glyph-Tree",
-	author: "QwQe308",
+	author: "QwQe308 - 符文css by cyxw",
 	pointsName: "反物质",
 	modFiles: ["layers/sing.js", "layers/reality.js", "layers/teresa.js", "layers/glyph.js", "tree.js"],
 
@@ -13,11 +13,13 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "beta-0.61",
+	num: "beta-0.62",
 	name: "",
 }
 
 let changelog = `<h1>更新日志:</h1><br><br>
+    <h3>beta-0.62</h3><br>
+		- 符文样式大改!感谢cyxw的css支援(哭).<br><br>
     <h3>beta-0.61</h3><br>
 		- 切换符文现在不再生成符文.<br><br>
     <h3>beta-0.6</h3><br>
