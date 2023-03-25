@@ -32,7 +32,7 @@ var nerf = {
         name: "能量衰竭(变数)",
         description() { return `暗能量获取速度/${format(this.effect())}. - [S1]` },
         effect() {
-            let nerf = player.s.points.add(1).pow(4).mul(n(1.1).pow(player.s.points))
+            let nerf = player.s.points.add(1).pow(4)//.mul(n(1.1).pow(player.s.points))
             if(inCelChall(12) && hasMilestone("s",1)) nerf = nerf.pow(2)
             return nerf
         },
@@ -244,7 +244,7 @@ addLayer("s", {
             requirementDescription: `6奇点 - 重建现实(环节III)`,
             effectDescription: `
             1.${quickColor(`触发变数惩罚: 粒子对撞`, "red")}.<br>
-            2."维度提升"的起始价格+20,最终价格*2,但是效果底数会随数量增长.<br>
+            2."维度提升"的起始价格+20,最终价格*1.75,但是效果底数会随数量增长.
             `,
             done() { return player.s.points.gte(6) },
             unlocked() { return player.s.best.gte(Number(this.id) - 1) },

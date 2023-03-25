@@ -56,11 +56,11 @@ function getStorageSlotCount() {
 }
 //点数对等级的加成
 function getPointBoostToLevel() {
-    return player.points.add(10).log10().pow(0.65)
+    return player.points.add(10).log10().pow(0.75)
 }
 //暗物质对等级的加成
 function getDEBoostToLevel() {
-    return player.s.de.mul(10).add(10).log10().pow(0.45)
+    return player.s.de.mul(10).add(10).log10().pow(0.5)
 }
 //等级计算
 function getStartLevel(type = null) {
@@ -154,14 +154,14 @@ var glyphList = [
             {//4
                 id: 'extraLevel',//id判断属性类型 同种进行叠加运算
                 stack(prevEff, thisEff, data) {//叠加运算
-                    return prevEff.add(thisEff.mul(data.number.add(10).log10().pow(0.5)))
+                    return prevEff.add(thisEff.mul(data.number.add(10).log(10).add(2).log(10)))
                 },
                 description(level, rarity) {
-                    return `获取符文等级+ (${format(this.effect(level, rarity))} * lg(数量+10)^0.5)(多效果间叠加)`
+                    return `获取符文等级+ (${format(this.effect(level, rarity))} * lg(lg(数量+10)+2))(多效果间叠加)`
                 },
                 effect(level, rarity) {
                     var strength = rarity.add(1).mul(level)
-                    return strength.mul(1.5).add(1).log10().div(1.5)
+                    return strength.mul(1.5).add(1).log10().pow(1.5).div(1.5)
                 },
                 chance() {
                     return n(1)

@@ -13,11 +13,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "beta-0.62",
+	num: "beta-0.63",
 	name: "",
 }
 
 let changelog = `<h1>更新日志:</h1><br><br>
+    <h3>beta-0.63</h3><br>
+        - 重新削弱了[能量衰减]减益.(x^4*1.1^x -> x^4)<br>
+		- 修改了符文词条4的属性.现在数量对其的影响更小了,但等级影响更大了.<br><br>
     <h3>beta-0.62</h3><br>
 		- 符文样式大改!感谢cyxw的css支援(哭).<br><br>
     <h3>beta-0.61</h3><br>

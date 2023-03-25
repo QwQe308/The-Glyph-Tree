@@ -262,7 +262,7 @@ addLayer("r", {
                 return `<big><big>维度提升.<br>已进行维度提升 ${format(getBuyableAmount(this.layer, this.id))} 次<br><br>所有维度(包括维度符文) x${format(this.effect())}(底数:x${format(this.base())})<br><br>要求:${format(this.cost())} 反物质维度<br>购买时强制进行一次现实重置(无收益).</big></big>`},
             cost(x = getBuyableAmount(this.layer, this.id)) {
                 let cost = n(20).add(x.mul(20))
-                if(hasMilestone('s',6)) cost = cost.add(20).mul(2)
+                if(hasMilestone('s',6)) cost = cost.add(20).mul(1.75)
                 return cost
             },
             base(x = getBuyableAmount(this.layer, this.id)) {
