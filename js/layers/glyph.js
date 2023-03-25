@@ -10,7 +10,7 @@ var getSingleEffStartValue = {
     extraLevel() { return n(0) },
     proc() { return n(0) },
 }
-var deleteMode = false
+var deleteMode = false//←你丫你这玩意全局变量几个意思
 
 //充能槽数
 function getChargedSlotCount() {
@@ -254,7 +254,7 @@ function randomType() {
     }
     return type
 }
-var selecting = [null, null]
+var selecting = [null, null]//←这个也是//0: 网格所在层级，1: id
 function scanEmptyPlaces() {
     var places = []
     for (i in player.g.grid) {
@@ -353,12 +353,7 @@ addLayer("g", {
         getStyle(data, id) {
             var canClick = this.getCanClick(data, id)
             if (!canClick && selecting[0] == 'g' && selecting[1] == id) selecting = [null, null]
-            return {
-                "background-color":
-                    canClick ?
-                        (selecting[1] == id && selecting[0] == 'g' ? 'lime' : 'lightblue') :
-                        ('#bf8f8f')
-            }
+            return GlyphtoCSS(this.layer,id)
         }
     },
     /* tabFormat: [
@@ -563,9 +558,10 @@ addLayer("ghost", {
         getDisplay(data, id) {
             if (data.type === null) {
                 if (isChargedSlot(id)) return `<big><big><b>Ϟ</b></big></big>`
+                if (!getEquipSlotUnlocked(id)) return "🔒"
                 return ``
             }
-            return `<big>${glyphList[data.type].icon}${(isChargedSlot(id) ? `(<b>Ϟ</b>)` : ``)}</big>\n等级:${(data.extraLevel.gt(0) ? quickColor(formatWhole(data.level.add(data.extraLevel)) + "↑", "green") : formatWhole(data.level.add(data.extraLevel)))}\n品质:${format(data.rarity.mul(100))}%\n<b>词条:${showEffects(data.effect)}</b>`
+            return `<big>${glyphList[data.type].icon}${(isChargedSlot(id) ? `(<b>Ϟ</b>)` : ``)}</big>\n等级:${(data.extraLevel.gt(0) ? quickColor(formatWhole(data.level.add(data.extraLevel)) + "↑", RGBArrayToString(MostReadable([0,128,0],RGBStringToArray(HexToRGBString(GlyphBGColor[data.type])),1.25,1))) : formatWhole(data.level.add(data.extraLevel)))}\n品质:${format(data.rarity.mul(100))}%\n<b>词条:${showEffects(data.effect)}</b>`
         },
         getTooltip(data, id) {
             if (!data) return
@@ -579,14 +575,7 @@ addLayer("ghost", {
         getStyle(data, id) {
             var canClick = this.getCanClick(data, id)
             if (!canClick && selecting[1] == id && selecting[0] == 'ghost') selecting = [null, null]
-            return {
-                "background-color":
-                    getEquipSlotUnlocked(id) ?
-                        data.type !== null ?
-                            (selecting[0] == 'ghost' && selecting[1] == id ? 'gold' : (isChargedSlot(id) ? 'lightblue' : 'pink')) :
-                            (isChargedSlot(id) ? 'blue' : 'grey')
-                        : "#0f0f0f"
-            }
+            return GlyphtoCSS(this.layer,id)
         }
     },
 })
